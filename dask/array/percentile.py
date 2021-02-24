@@ -31,7 +31,13 @@ def _percentile(a, q, interpolation="linear"):
         return result, n
     if not np.issubdtype(a.dtype, np.number):
         interpolation = "nearest"
-    return np.percentile(a, q, interpolation=interpolation), n
+    result = np.percentile(a, q, interpolation=interpolation)
+    if 100 in q:
+        # https://github.com/cupy/cupy/issues/4451 
+        max_value = a.max()
+        max_locations = [i for i, x in enumerate(q) if x == 100]
+        result[max_locations] = max_value
+    return result, n
 
 
 def _tdigest_chunk(a):
